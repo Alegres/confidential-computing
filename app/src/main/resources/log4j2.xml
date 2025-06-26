@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+        <File name="FileAppender" filename="local/assembly-local/filebeat_ingest_data/backend.log">
+            <JSONLayout compact="true" eventEol="true">
+                <KeyValuePair key="@timestamp" value="$${date:yyyy-MM-dd HH:mm:ss.SSS}" />
+                <KeyValuePair key="app" value="backend" />
+            </JSONLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="FileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>

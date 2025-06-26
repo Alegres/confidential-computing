@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: backend
+
+backend:
+  security:
+    users:
+      - username: testUser
+        password: $2a$10$uKw9ORqCF.qA3p6woHCgmeGW0jFuU9AstYhl61Uw8RTQ5AaZCfuru
+        roles: USER

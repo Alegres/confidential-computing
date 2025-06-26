@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <artifactId>root-pom</artifactId>
+    <groupId>com.demo.confidential</groupId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>app</module>
+    </modules>
+
+    <properties>
+        <clusterId.lowercase>conn</clusterId.lowercase>
+        <clusterId.uppercase>CONN</clusterId.uppercase>
+        <microserviceId.lowercase>backend</microserviceId.lowercase>
+        <microserviceId.uppercase>BACKEND</microserviceId.uppercase>
+        <microserviceName>BackendService</microserviceName>
+
+        <tomcat.version>10.1.39</tomcat.version>
+
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <!-- do not modify the following values -->
+        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <openapi-codegen-maven-plugin.version>7.4.0</openapi-codegen-maven-plugin.version>
+        <springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
+
+        <swagger-codegen-maven-plugin.version>3.0.35</swagger-codegen-maven-plugin.version>
+        <swagger-annotations.version>2.0.9</swagger-annotations.version>
+
+        <resilience4j.version>1.7.0</resilience4j.version>
+
+        <awaitility.version>4.2.0</awaitility.version>
+
+        <backend.swagger.version>1.2.1</backend.swagger.version>
+
+        <assertj-core.version>3.19.0</assertj-core.version>
+
+        <gson.version>2.8.9</gson.version>
+
+        <!-- only run unit test by default, will be override by profiles -->
+        <skipTests>false</skipTests>
+        <skipITs>true</skipITs>
+        <skipLTandPTs>true</skipLTandPTs>
+        <integrationTestFlag>!IntegrationTest</integrationTestFlag>
+        <!-- generated files or file belonging to a tool like swagger UI can be excluded -->
+        <sonar.exclusions>**/gen/**.java,**/generated-sources/**.java</sonar.exclusions>
+        <sonar.coverage.exclusions>
+            **/*Exception.java, <!-- no logic -->
+            **/*Mock.java,
+            **/*Config.java, <!-- no logic, only Spring configuration setup code -->
+            **/*Application.java, <!-- start Spring java process cannot be tested -->
+        </sonar.coverage.exclusions>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+        <mcp.version>1.5.1</mcp.version>
+        <protobuf.version>3.9.2</protobuf.version>
+        <protoc.maven.plugin.version>3.11.4</protoc.maven.plugin.version>
+        <amazon-kinesis-producer>0.15.5</amazon-kinesis-producer>
+    </properties>
+
+    <profiles>
+        <!-- integration-test profile -->
+        <profile>
+            <id>it</id>
+            <properties>
+                <!-- run junit tests and differentiate with tag between junit and integration because they are in the same module -->
+                <skipTests>false</skipTests>
+                <skipITs>true</skipITs>
+                <skipLTandPTs>true</skipLTandPTs>
+                <integrationTestFlag>IntegrationTest</integrationTestFlag>
+            </properties>
+            <!-- only build the integration-test submodule and its dependencies -->
+            <modules>
+                <module>app</module>
+            </modules>
+        </profile>
+
+        <!-- smoke-test profile (E2E and PROD) -->
+        <profile>
+            <id>st</id>
+            <properties>
+                <!-- do not run unit tests and integration tests during smoke tests -->
+                <skipTests>true</skipTests>
+                <skipITs>false</skipITs>
+                <skipLTandPTs>true</skipLTandPTs>
+            </properties>
+            <!-- only build the smoke-test submodule and its dependencies -->
+            <modules>
+                <module>api-backend-v1-test</module>
+            </modules>
+        </profile>
+
+        <!-- Environment profiles -->
+        <profile>
+            <id>NONE-CI</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <hub>NONE</hub>
+                <environment>CI</environment>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>BACKEND_EMEA_TEST</id>
+            <properties>
+                <hub>EMEA</hub>
+                <environment>TEST</environment>
+                <smoketest.backend.password>${env.SMOKETEST_BACKEND_PASSWORD}</smoketest.backend.password>
+            </properties>
+        </profile>
+        <profile>
+            <id>BACKEND_US_TEST</id>
+            <properties>
+                <hub>US</hub>
+                <environment>TEST</environment>
+                <smoketest.backend.password>${env.SMOKETEST_BACKEND_PASSWORD}</smoketest.backend.password>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Swagger Stuff -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
+            </dependency>
+            <!-- END Swagger -->
+
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gsonfire</groupId>
+                <artifactId>gson-fire</artifactId>
+                <version>1.8.4</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>2.0.1.Final</version>
+            </dependency>
+
+            <!-- /Swagger Stuff -->
+
+            <!-- Logging -->
+
+            <!-- Spring -->
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-reactor</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-spring-boot2</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+            <!-- /Spring -->
+
+            <!-- Testing -->
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- /Testing -->
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <defaultGoal>clean verify</defaultGoal>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>3.7.0.1746</version>
+                </plugin>
+                <plugin>
+                    <!--automatically inherited compile goal plugin -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.7.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <compilerArguments>
+                            <endorseddirs>${endorsed.dir}</endorseddirs>
+                        </compilerArguments>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.swagger.codegen.v3</groupId>
+                    <artifactId>swagger-codegen-maven-plugin</artifactId>
+                    <version>${swagger-codegen-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.os72</groupId>
+                        <artifactId>protoc-jar-maven-plugin</artifactId>
+                    <version>${protoc.maven.plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
