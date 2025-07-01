@@ -138,3 +138,5 @@ And then, to get memory dumps and see that the data is not available in plain te
   * For that, the easiest way is to configure service-mesh.
   * Service mesh is created using **lb-service.yml** resource.
 * You can use ```app/kubernetes/plain_resources``` to  demonstrate also plain app, without confidential computing, and compare both memory dumps.
+* Make sure that there is enough RAM set in the **deployment.yml** of our app for the confidential container (minimum 2x the size of the Docker image).
+  * The image will be loaded to the memory in the runtime.
