@@ -17,31 +17,31 @@ with the real cluster-name.
 
 # Deploying confidential app
 0. Make sure contrast runtime and CLI versions are compliant:
-   ```shell
-   contrast --version
-   ```
+```shell
+contrast --version
+```
 (in our case we had to use 1.9.0)
 
 1. Download Coordinator resource (coordinator.yml):
-    ```shell
-   curl -fLO https://github.com/edgelesssys/contrast/releases/download/v1.9.0/coordinator.yml --output-dir deployment
-   ```
+ ```shell
+curl -fLO https://github.com/edgelesssys/contrast/releases/download/v1.9.0/coordinator.yml --output-dir deployment
+```
    
 2. Create resources from ```app/kubernetes/resources``` inside new directory in the host machine and put the coordinator.yml next to it.
 3. Run generate:
-    ```shell
-    contrast generate --reference-values k3s-qemu-snp resources/
-    ```
+ ```shell
+ contrast generate --reference-values k3s-qemu-snp resources/
+ ```
    
 4. Fill missing TCB values in manifest.json (two places in the file):
-    ```json
-    "MinimumTCB": {
-        "BootloaderVersion": 9,
-        "TEEVersion": 0,
-        "SNPVersion": 23,
-        "MicrocodeVersion": 72
-    },
-    ```
+ ```json
+ "MinimumTCB": {
+     "BootloaderVersion": 9,
+     "TEEVersion": 0,
+     "SNPVersion": 23,
+     "MicrocodeVersion": 72
+ },
+ ```
 
 **ATTENTION!**
 > On bare-metal SEV-SNP, contrast generate is unable to fill in the MinimumTCB values as they can vary between platforms. 
@@ -51,53 +51,53 @@ with the real cluster-name.
 > This should only be done in a secure environment. Note that the values will differ between CPU models.
 
 5. Run apply:
-    ```shell
-    kubectl apply -f resources/coordinator.yml
-    ```
+ ```shell
+ kubectl apply -f resources/coordinator.yml
+ ```
    
 6. Get LB address:
-    ```shell
-    coordinator=$(kubectl get svc coordinator -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
-    ```
+ ```shell
+ coordinator=$(kubectl get svc coordinator -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+ ```
    
 7. Set manifest:
-    ```shell
-    contrast set -c "${coordinator}:1313" resources/
-    ```
+ ```shell
+ contrast set -c "${coordinator}:1313" resources/
+ ```
    
 8. Run apply:
-    ```shell
-    kubectl apply -f resources/
-    ```
+ ```shell
+ kubectl apply -f resources/
+ ```
 
 # Pushing Docker image
 1. Build Docker image here in the project:
-    ```shell
-    docker build -t my-confidential-app .
-    ```
+ ```shell
+ docker build -t my-confidential-app .
+ ```
 
 2. Copy Docker image to SSH host:
-    ```shell
-    docker save -o demo.tar my-confidential-app:latest
-    ```
+ ```shell
+ docker save -o demo.tar my-confidential-app:latest
+ ```
    
-    ```shell
-    scp demo.tar root@[cluster-name].confidential.cloud:/tmp/
-    ```
+ ```shell
+ scp demo.tar root@[cluster-name].confidential.cloud:/tmp/
+ ```
 3. Load image on the cluster (host):
-    ```shell
-    docker load -i demo.tar
-    ```
+ ```shell
+ docker load -i demo.tar
+ ```
 
 4. Set proper tag:
-    ```shell
-    docker tag my-confidential-app:latest registry.[cluster-name].confidential.cloud:5000/demo:latest
-    ```
+ ```shell
+ docker tag my-confidential-app:latest registry.[cluster-name].confidential.cloud:5000/demo:latest
+ ```
    
 5. Push to repository:
-    ```shell
-    docker push registry.[cluster-name].confidential.cloud:5000/demo:latest
-    ```
+ ```shell
+ docker push registry.[cluster-name].confidential.cloud:5000/demo:latest
+ ```
 
 # Get & Investigate Memory Dump
 First, you can simply send request to the application load balancer like this:
@@ -113,24 +113,24 @@ curl --location 'https://[cluster-name].confidential.cloud/client/v1' \
 And then, to get memory dumps and see that the data is not available in plain text:
 
 1. Get container id of the confidential app:
-    ```shell
-    kubectl get pod [pod-name] -n default -o jsonpath='{.status.containerStatuses[0].containerID}'
-    ```
+ ```shell
+ kubectl get pod [pod-name] -n default -o jsonpath='{.status.containerStatuses[0].containerID}'
+ ```
 
 2. Get PID of the process:
-    ```shell
-    crictl inspect [container-id] | grep pid
-    ```
+ ```shell
+ crictl inspect [container-id] | grep pid
+ ```
 
 3. Get memory dump:
-    ```shell
-    gcore [pid]
-    ```
+ ```shell
+ gcore [pid]
+ ```
 
 4. Investigate memory dump
-    ```shell
-    strings core.[pid] | grep SecretString
-    ```
+ ```shell
+ strings core.[pid] | grep SecretString
+ ```
    
 # Important Notes
 * Contract runtime and CLI versions must match!
