@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("client/v1")
 class ClientController {
-    private static final Logger LOGGER = LogManager.getLogger(ClientController.class);
-
     private final ClientsService service;
 
     @Autowired

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    contrast.edgeless.systems/servicemesh-ingress: "demo#8081#false"
+  labels:
+    app: demo
+  name: demo-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      runtimeClassName: contrast-cc
+      containers:
+      - image: registry.[cluster-name].confidential.cloud:5000/demo:latest
+        name: demo
+        resources:
+          limits:
+            memory: 1280Mi
+          requests:
+            memory: 1280Mi

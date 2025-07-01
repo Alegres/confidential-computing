@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+    app: plain-app
+  name: plain-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plain-app
+  template:
+    metadata:
+      labels:
+        app: plain-app
+    spec:
+      containers:
+      - image: registry.[cluster-name].confidential.cloud:5000/demo:latest
+        name: plain-app
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            memory: 512Mi

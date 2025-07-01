@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: coordinator
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Delete
+    whenScaled: Delete
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: coordinator
+  serviceName: coordinator
+  template:
+    metadata:
+      annotations:
+        contrast.edgeless.systems/pod-role: coordinator
+      labels:
+        app.kubernetes.io/name: coordinator
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  contrast.edgeless.systems/pod-role: coordinator
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - image: ghcr.io/edgelesssys/contrast/coordinator:v1.9.0@sha256:82e98e14a1af07c3bcd6acc2939c2a1d315d27c64e77656b4a69e9acae6d8cbe
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /probe/liveness
+            port: 9102
+          periodSeconds: 10
+        name: coordinator
+        ports:
+        - containerPort: 1313
+          name: userapi
+        - containerPort: 7777
+          name: meshapi
+        readinessProbe:
+          httpGet:
+            path: /probe/readiness
+            port: 9102
+          periodSeconds: 5
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            memory: 200Mi
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        startupProbe:
+          httpGet:
+            path: /probe/startup
+            port: 9102
+          initialDelaySeconds: 1
+          periodSeconds: 1
+      runtimeClassName: contrast-cc
+      serviceAccountName: coordinator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: coordinator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: coordinator
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - create
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: coordinator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: coordinator
+subjects:
+- kind: ServiceAccount
+  name: coordinator
+  namespace: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    contrast.edgeless.systems/expose-service: "true"
+  name: coordinator
+spec:
+  ports:
+  - name: userapi
+    port: 1313
+    targetPort: 1313
+  - name: meshapi
+    port: 7777
+    targetPort: 7777
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: coordinator
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coordinator-ready
+spec:
+  ports:
+  - name: userapi
+    port: 1313
+    targetPort: 1313
+  - name: meshapi
+    port: 7777
+    targetPort: 7777
+  selector:
+    app.kubernetes.io/name: coordinator

@@ -1,5 +1,5 @@
 # Start with a lightweight base image with Java
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk-alpine
 
 # Copy the jar file into the container
 COPY app/target/*.jar app.jar
