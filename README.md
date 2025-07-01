@@ -133,6 +133,8 @@ And then, to get memory dumps and see that the data is not available in plain te
  ```
    
 # Important Notes
+* More instruction can be found in the official documentation:
+  * https://docs.edgeless.systems/contrast/deployment?platform=k3s-qemu-snp
 * Contract runtime and CLI versions must match!
 * TLS must be active between the end-user and our application.
   * For that, the easiest way is to configure service-mesh.
