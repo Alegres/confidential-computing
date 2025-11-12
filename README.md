@@ -3,11 +3,26 @@ Confidential computing protects your data while it's being used (not just when s
 a secure, isolated part of the computer called a trusted execution environment (TEE). 
 This keeps it safe even from cloud providers or system administrators.
 
-Edgeless Systems has created a Kubernetes Cluster for us.
-We had to provide SSH keys to be able to login via SSH:
+More and more clients are turning to Confidential Computing due to growing concerns about data privacy, security, and compliance. This technology allows data to remain encrypted even during processing, reducing the risk of unauthorized access—even from cloud providers themselves. In countries like Germany, strict regulations such as GDPR and the impact of the Schrems II ruling make it risky to store or process sensitive data on US-based cloud platforms like AWS. The fear of exposure to the US Cloud Act and lack of control over data location drives clients to seek alternatives.
+
+Here you can read more about the Contrast solution from one of our partners - Edgeless Systems:
+* https://docs.edgeless.systems/contrast/
+
+Edgeless Systems has created a Kubernetes Cluster for us **on the Hertzner machine that supports the confidential computing** (this must be a very specific hardware!). The demo was deployed on Hertzner dedicated machine, however, it can also be deployed to e.g. Azure AKS (Kubernetes service) or AWS EKS, with some limitations (eg. harder access to the physical host to take heap dumps).
+
+The Hetzner Machine that was provided for the Demo was an AX162-R:
+* https://www.hetzner.com/dedicated-rootserver/ax162-r/
+
+We can request for the machine on our own, and just install Edgeless solutions there.
+
+As the colleagues created the machine for us, we had to provide only the SSH keys to the Edgeless colleagues, to be able to login via SSH, and proceed with the demo:
 ```shell
 ssh -i [key] root@[cluster-name].confidential.cloud
 ```
+
+# The Demo Idea
+The idea of the demo is to deploy two clusters - one standard, and one confidential - and present that taking heap dumps from the Java process on the standard cluster results in a plain text data displayed in the console, while taking heap dumps from the confidential cluster results in an encrypted data.
+
 
 # Preparation
 It is important to retrieve the cluster-name from Edgeless colleagues and to replace in the whole project all occurrences of:
