@@ -85,6 +85,10 @@ curl -fLO https://github.com/edgelesssys/contrast/releases/download/v1.9.0/coord
  kubectl apply -f resources/
  ```
 
+**ATTENTION!**
+> You can do the same thing for the **plain_resources**, to run (in parallel) the non-confidential application.
+> Then, you can later take heap dumps from both Java processes and present the difference between confidential & non-confidential setup.
+
 # Pushing Docker image
 1. Build Docker image here in the project:
  ```shell
@@ -114,6 +118,8 @@ curl -fLO https://github.com/edgelesssys/contrast/releases/download/v1.9.0/coord
  docker push registry.[cluster-name].confidential.cloud:5000/demo:latest
  ```
 
+The same image will be used for both confidential and non-confidential apps.
+
 # Get & Investigate Memory Dump
 First, you can simply send request to the application load balancer like this:
 ```shell
@@ -125,9 +131,11 @@ curl --location 'https://[cluster-name].confidential.cloud/client/v1' \
 }'
 ```
 
-And then, to get memory dumps and see that the data is not available in plain text:
+Here make sure to target both load balancers (confidential & non-confidential) to be able to take both heap dumps later.
 
-1. Get container id of the confidential app:
+And then, to get memory dumps:
+
+1. Get container id of the confidential app (or the plain app):
  ```shell
  kubectl get pod [pod-name] -n default -o jsonpath='{.status.containerStatuses[0].containerID}'
  ```
